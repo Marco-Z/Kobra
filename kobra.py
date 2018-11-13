@@ -12,7 +12,7 @@ class Kobra():
         self.alive = True
         self.window = curses.initscr()
         self.speed = speed
-        self.window.timeout(0)
+        self.window.timeout(self.speed)
         curses.curs_set(0)
         self.fruits = set([self.spawn_fruit()])
         self.print()
@@ -107,6 +107,7 @@ class Kobra():
         self.window.addstr(y + 1, x2, points_string)
         self.window.refresh()
         self.alive = False
+        time.sleep(2)
 
     def is_alive(self):
         return self.alive
@@ -143,8 +144,10 @@ class Kobra():
             self.speed -= 25
         elif command == "-":
             self.speed += 25
+        self.window.timeout(self.speed)
 
     def read_char(self):
+        tic = dt.now()
         char_map = {
             259: "N",
             261: "E",
@@ -162,7 +165,12 @@ class Kobra():
             self.set_direction(command)
         elif command in ["+", "-"]:
             self.change_speed(command)
+        toc = dt.now()
 
+        # wait to time-out
+        remaining_time = self.speed * 1000 - (toc - tic).microseconds
+        if remaining_time > 0:
+            time.sleep(remaining_time / 1000 / 1000 / 1000)
 
 def main(_):
     kobra = Kobra()
