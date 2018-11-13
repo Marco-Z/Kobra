@@ -4,25 +4,24 @@ from datetime import datetime as dt
 
 class Kobra():
 
-    def __init__(self, window, speed=500):
-        self.kobra = [(1,1)]
+    def __init__(self, speed=500):
+        self.kobra = [(1, 1)]
         self.direction = "E"
         self.alive = True
-        self.window = window
+        self.window = curses.initscr()
         self.speed = speed
-        window.border()
-        window.timeout(0)
+        self.window.border()
+        self.window.timeout(0)
         curses.curs_set(0)
-        window.refresh()
+        self.window.refresh()
         self.print()
 
     def print(self):
         self.window.erase()
         self.window.border()
-        for x,y in self.kobra:
-            self.window.addch(y,x,"O")
+        for x, y in self.kobra:
+            self.window.addch(y, x, "O")
         self.window.refresh()
-
 
     def move(self):
         max_y, max_x = self.window.getmaxyx()
@@ -49,7 +48,7 @@ class Kobra():
             else:
                 self.game_over()
         self.print()
-            
+
     def game_over(self):
         display_string = "GAME OVER!"
         self.window.erase()
@@ -57,7 +56,7 @@ class Kobra():
         max_y, max_x = self.window.getmaxyx()
         y = max_y // 2
         x = (max_x - len(display_string)) // 2
-        self.window.addstr(y,x, display_string)
+        self.window.addstr(y, x, display_string)
         self.window.refresh()
         self.alive = False
 
@@ -66,26 +65,11 @@ class Kobra():
 
     def set_direction(self, key):
         direction_map = {
-            259: "N", 
-            261: "E", 
-            258: "S", 
+            259: "N",
+            261: "E",
+            258: "S",
             260: "W",
         }
         direction = direction_map.get(key)
         if direction:
             self.direction = direction
-
-def main(_, window):
-    kobra = Kobra(window)
-    while kobra.is_alive():
-        tic = dt.now()
-        while (dt.now() - tic).microseconds < kobra.speed * 1000:
-            key = window.getch()
-            kobra.set_direction(key)
-        kobra.move()
-
-    time.sleep(2)
-
-if __name__ == "__main__":
-    stdscr = curses.initscr()
-    curses.wrapper(main, stdscr)
