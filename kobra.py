@@ -138,6 +138,11 @@ class Kobra():
         self.window.getch()
         self.window.timeout(0)
 
+    def change_speed(self, command):
+        if command == "+":
+            self.speed -= 25
+        elif command == "-":
+            self.speed += 25
 
     def read_char(self):
         char_map = {
@@ -145,7 +150,9 @@ class Kobra():
             261: "E",
             258: "S",
             260: "W",
-            112: "PAUSE"
+            112: "PAUSE",
+            43: "+",
+            45: "-",
         }
         key_code = self.window.getch()
         command = char_map.get(key_code)
@@ -153,6 +160,8 @@ class Kobra():
             self.pause()
         elif command in ["N", "E", "S", "W"]:
             self.set_direction(command)
+        elif command in ["+", "-"]:
+            self.change_speed(command)
 
 
 def main(_):
