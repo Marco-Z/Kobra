@@ -53,26 +53,26 @@ class Kobra():
             if head_y > 1:
                 self.kobra.append((head_x, head_y - 1))
             else:
-                self.game_over()
+                return self.game_over()
         elif self.direction == "E":
             if head_x < max_x - 2:
                 self.kobra.append((head_x + 1, head_y))
             else:
-                self.game_over()
+                return self.game_over()
         elif self.direction == "S":
             if head_y < max_y - 2:
                 self.kobra.append((head_x, head_y + 1))
             else:
-                self.game_over()
+                return self.game_over()
         elif self.direction == "W":
             if head_x > 1:
                 self.kobra.append((head_x - 1, head_y))
             else:
-                self.game_over()
+                return self.game_over()
 
         # if the kobra eats itself it's game over
         if self.head() in self.body():
-            self.game_over()
+            return self.game_over()
 
         self.print()
 
