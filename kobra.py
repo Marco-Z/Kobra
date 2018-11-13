@@ -76,12 +76,12 @@ class Kobra():
             self.direction = direction
 
 
-def main(_, window):
-    kobra = Kobra(window)
+def main(_):
+    kobra = Kobra()
     while kobra.is_alive():
         tic = dt.now()
         while (dt.now() - tic).microseconds < kobra.speed * 1000:
-            key = window.getch()
+            key = kobra.window.getch()
             kobra.set_direction(key)
         kobra.move()
 
@@ -89,5 +89,4 @@ def main(_, window):
 
 
 if __name__ == "__main__":
-    stdscr = curses.initscr()
-    curses.wrapper(main, stdscr)
+    curses.wrapper(main)
