@@ -2,6 +2,7 @@ import curses
 import time
 from datetime import datetime as dt
 
+
 class Kobra():
 
     def __init__(self, speed=500):
@@ -73,3 +74,19 @@ class Kobra():
         direction = direction_map.get(key)
         if direction:
             self.direction = direction
+
+
+def main(_):
+    kobra = Kobra()
+    while kobra.is_alive():
+        tic = dt.now()
+        while (dt.now() - tic).microseconds < kobra.speed * 1000:
+            key = kobra.window.getch()
+            kobra.set_direction(key)
+        kobra.move()
+
+    time.sleep(2)
+
+
+if __name__ == "__main__":
+    curses.wrapper(main)
