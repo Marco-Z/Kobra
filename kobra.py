@@ -172,16 +172,15 @@ class Kobra():
         if remaining_time > 0:
             time.sleep(remaining_time / 1000 / 1000 / 1000)
 
+    def play(self):
+        while self.is_alive():
+            self.read_char()
+            self.move()
+
+
 def main(_):
     kobra = Kobra()
-    while kobra.is_alive():
-        tic = dt.now()
-        while (dt.now() - tic).microseconds < kobra.speed * 1000:
-            kobra.read_char()
-            time.sleep(.1)
-        kobra.move()
-
-    time.sleep(2)
+    kobra.play()
 
 
 if __name__ == "__main__":
