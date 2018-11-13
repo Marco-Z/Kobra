@@ -24,8 +24,20 @@ class Kobra():
         for x, y in self.fruits:
             self.window.addch(y, x, "🍒")
 
-        for x, y in self.kobra:
-            self.window.addch(y, x, "O")
+        for x, y in self.body():
+            self.window.addch(y, x, "~")
+
+        x, y = self.head()
+        if self.direction == "N":
+            symbol = "⏶"
+        elif self.direction == "E":
+            symbol = "⏵"
+        elif self.direction == "S":
+            symbol = "⏷"
+        elif self.direction == "W":
+            symbol = "⏴"
+            
+        self.window.addch(y, x, symbol)
 
         _, max_x = self.window.getmaxyx()
         y = 0
