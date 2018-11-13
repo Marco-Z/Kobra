@@ -27,6 +27,12 @@ class Kobra():
         for x, y in self.kobra:
             self.window.addch(y, x, "O")
 
+        _, max_x = self.window.getmaxyx()
+        y = 0
+        points = f" {len(self.body())} "
+        x = (max_x - len(points)) // 2
+        self.window.addstr(y, x, points)
+
         self.window.refresh()
 
     def head(self):
@@ -78,12 +84,15 @@ class Kobra():
 
     def game_over(self):
         display_string = "GAME OVER!"
+        points_string = f"Your points: {len(self.body())}"
         self.window.erase()
         self.window.border()
         max_y, max_x = self.window.getmaxyx()
         y = max_y // 2
-        x = (max_x - len(display_string)) // 2
-        self.window.addstr(y, x, display_string)
+        x1 = (max_x - len(display_string)) // 2
+        x2 = (max_x - len(points_string)) // 2
+        self.window.addstr(y - 1, x1, display_string)
+        self.window.addstr(y + 1, x2, points_string)
         self.window.refresh()
         self.alive = False
 
