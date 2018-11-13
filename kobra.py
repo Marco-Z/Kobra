@@ -1,6 +1,7 @@
 import curses
 import time
 from datetime import datetime as dt
+import random
 
 
 class Kobra():
@@ -11,23 +12,34 @@ class Kobra():
         self.alive = True
         self.window = curses.initscr()
         self.speed = speed
-        self.window.border()
         self.window.timeout(0)
         curses.curs_set(0)
-        self.window.refresh()
+        self.fruits = set([self.spawn_fruit()])
         self.print()
 
     def print(self):
         self.window.erase()
         self.window.border()
+
+        for x, y in self.fruits:
+            self.window.addch(y, x, "🍒")
+
         for x, y in self.kobra:
             self.window.addch(y, x, "O")
+
         self.window.refresh()
 
     def move(self):
         max_y, max_x = self.window.getmaxyx()
         head_x, head_y = self.kobra[-1]
-        self.kobra.pop(0)
+
+        # if the kobra eats a fruit it grows
+        if (head_x, head_y) not in self.fruits:
+            self.kobra.pop(0)
+        else:
+            self.fruits.remove((head_x, head_y))
+            self.fruits.add(self.spawn_fruit())
+
         if self.direction == "N":
             if head_y > 1:
                 self.kobra.append((head_x, head_y - 1))
@@ -48,6 +60,11 @@ class Kobra():
                 self.kobra.append((head_x - 1, head_y))
             else:
                 self.game_over()
+
+        # if the kobra eats itself it's game over
+        if self.kobra[-1] in self.kobra[:-1]:
+            self.game_over()
+
         self.print()
 
     def game_over(self):
@@ -74,6 +91,12 @@ class Kobra():
         direction = direction_map.get(key)
         if direction:
             self.direction = direction
+
+    def spawn_fruit(self):
+        max_y, max_x = self.window.getmaxyx()
+        y = random.randint(1, max_y - 2)
+        x = random.randint(1, max_x - 2)
+        return x, y
 
 
 def main(_):
