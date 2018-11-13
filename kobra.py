@@ -29,9 +29,18 @@ class Kobra():
 
         self.window.refresh()
 
+    def head(self):
+        return self.kobra[-1]
+
+    def body(self):
+        return self.kobra[:-1]
+    
+    def tail(self):
+        return self.kobra[0]
+
     def move(self):
         max_y, max_x = self.window.getmaxyx()
-        head_x, head_y = self.kobra[-1]
+        head_x, head_y = self.head()
 
         # if the kobra eats a fruit it grows
         if (head_x, head_y) not in self.fruits:
@@ -62,7 +71,7 @@ class Kobra():
                 self.game_over()
 
         # if the kobra eats itself it's game over
-        if self.kobra[-1] in self.kobra[:-1]:
+        if self.head() in self.body():
             self.game_over()
 
         self.print()
