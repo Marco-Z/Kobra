@@ -25,17 +25,17 @@ class Kobra():
             self.window.addch(y, x, "🍒")
 
         for x, y in self.body():
-            self.window.addch(y, x, "~")
+            self.window.addch(y, x, "#")
 
         x, y = self.head()
         if self.direction == "N":
-            symbol = "⏶"
+            symbol = "▲"
         elif self.direction == "E":
-            symbol = "⏵"
+            symbol = "▶"
         elif self.direction == "S":
-            symbol = "⏷"
+            symbol = "▼"
         elif self.direction == "W":
-            symbol = "⏴"
+            symbol = "◀"
 
         self.window.addch(y, x, symbol)
 
