@@ -111,16 +111,8 @@ class Kobra():
     def is_alive(self):
         return self.alive
 
-    def set_direction(self, key):
-        direction_map = {
-            259: "N",
-            261: "E",
-            258: "S",
-            260: "W",
-        }
-        direction = direction_map.get(key)
-        if direction:
-            self.direction = direction
+    def set_direction(self, direction):
+        self.direction = direction
 
     def spawn_fruit(self):
         max_y, max_x = self.window.getmaxyx()
@@ -146,16 +138,39 @@ class Kobra():
         self.window.getch()
         self.window.timeout(0)
 
+    def change_speed(self, command):
+        if command == "+":
+            self.speed -= 25
+        elif command == "-":
+            self.speed += 25
+
+    def read_char(self):
+        char_map = {
+            259: "N",
+            261: "E",
+            258: "S",
+            260: "W",
+            112: "PAUSE",
+            43: "+",
+            45: "-",
+        }
+        key_code = self.window.getch()
+        command = char_map.get(key_code)
+        if command == "PAUSE":
+            self.pause()
+        elif command in ["N", "E", "S", "W"]:
+            self.set_direction(command)
+        elif command in ["+", "-"]:
+            self.change_speed(command)
+
 
 def main(_):
     kobra = Kobra()
     while kobra.is_alive():
         tic = dt.now()
         while (dt.now() - tic).microseconds < kobra.speed * 1000:
-            key = kobra.window.getch()
-            if key == 112:
-                kobra.pause()
-            kobra.set_direction(key)
+            kobra.read_char()
+            time.sleep(.1)
         kobra.move()
 
     time.sleep(2)
