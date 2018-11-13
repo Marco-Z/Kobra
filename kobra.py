@@ -36,7 +36,7 @@ class Kobra():
             symbol = "⏷"
         elif self.direction == "W":
             symbol = "⏴"
-            
+
         self.window.addch(y, x, symbol)
 
         _, max_x = self.window.getmaxyx()
@@ -52,7 +52,7 @@ class Kobra():
 
     def body(self):
         return self.kobra[:-1]
-    
+
     def tail(self):
         return self.kobra[0]
 
@@ -128,6 +128,24 @@ class Kobra():
         x = random.randint(1, max_x - 2)
         return x, y
 
+    def pause(self):
+        self.window.timeout(-1)
+
+        display_string = "PAUSE"
+        resume_string = "Press any key to continue"
+        self.window.erase()
+        self.window.border()
+        max_y, max_x = self.window.getmaxyx()
+        y = max_y // 2
+        x1 = (max_x - len(display_string)) // 2
+        x2 = (max_x - len(resume_string)) // 2
+        self.window.addstr(y - 1, x1, display_string)
+        self.window.addstr(y + 1, x2, resume_string)
+        self.window.refresh()
+
+        self.window.getch()
+        self.window.timeout(0)
+
 
 def main(_):
     kobra = Kobra()
@@ -135,6 +153,8 @@ def main(_):
         tic = dt.now()
         while (dt.now() - tic).microseconds < kobra.speed * 1000:
             key = kobra.window.getch()
+            if key == 112:
+                kobra.pause()
             kobra.set_direction(key)
         kobra.move()
 
