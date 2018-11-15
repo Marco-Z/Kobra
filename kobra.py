@@ -1,7 +1,9 @@
 import curses
-import time
-from datetime import datetime as dt
 import random
+import select
+import sys
+import threading
+import time
 
 
 class Kobra():
@@ -12,7 +14,7 @@ class Kobra():
         self.alive = True
         self.window = curses.initscr()
         self.speed = speed
-        self.window.timeout(0)
+        self.window.timeout(self.speed)
         curses.curs_set(0)
         self.fruits = set([self.spawn_fruit()])
         self.print()
@@ -137,19 +139,20 @@ class Kobra():
         self.window.refresh()
 
         self.window.getch()
-        self.window.timeout(0)
+        self.window.timeout(self.speed)
 
     def change_speed(self, command):
         if command == "+":
             self.speed -= 25
         elif command == "-":
             self.speed += 25
+        self.window.timeout(self.speed)
 
     def next(self):
-        tic = dt.now()
-        while (dt.now() - tic).microseconds < self.speed * 1000:
-            self.read_char()
-            time.sleep(.1)
+        t = threading.Thread(target=lambda: time.sleep(self.speed / 1000))
+        t.start()
+        self.read_char()
+        t.join()
 
     def read_char(self):
         char_map = {
@@ -162,6 +165,7 @@ class Kobra():
             45: "-",
         }
 
+        curses.flushinp()
         key_code = self.window.getch()
 
         command = char_map.get(key_code)
