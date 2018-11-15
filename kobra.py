@@ -1,18 +1,20 @@
 import curses
-import time
-from datetime import datetime as dt
 import random
+import select
+import sys
+import threading
+import time
 
 
 class Kobra():
 
-    def __init__(self, speed=500):
+    def __init__(self, speed=400):
         self.kobra = [(1, 1)]
         self.direction = "E"
         self.alive = True
         self.window = curses.initscr()
         self.speed = speed
-        self.window.timeout(0)
+        self.window.timeout(self.speed)
         curses.curs_set(0)
         self.fruits = set([self.spawn_fruit()])
         self.print()
@@ -66,26 +68,24 @@ class Kobra():
         else:
             self.fruits.remove((head_x, head_y))
             self.fruits.add(self.spawn_fruit())
+            self.speed -= 10
+            self.window.timeout(self.speed)
 
         if self.direction == "N":
-            if head_y > 1:
-                self.kobra.append((head_x, head_y - 1))
-            else:
+            self.kobra.append((head_x, head_y - 1))
+            if head_y <= 1:
                 return self.game_over()
         elif self.direction == "E":
-            if head_x < max_x - 2:
-                self.kobra.append((head_x + 1, head_y))
-            else:
+            self.kobra.append((head_x + 1, head_y))
+            if head_x >= max_x - 2:
                 return self.game_over()
         elif self.direction == "S":
-            if head_y < max_y - 2:
-                self.kobra.append((head_x, head_y + 1))
-            else:
+            self.kobra.append((head_x, head_y + 1))
+            if head_y >= max_y - 2:
                 return self.game_over()
         elif self.direction == "W":
-            if head_x > 1:
-                self.kobra.append((head_x - 1, head_y))
-            else:
+            self.kobra.append((head_x - 1, head_y))
+            if head_x <= 1:
                 return self.game_over()
 
         # if the kobra eats itself it's game over
@@ -137,19 +137,13 @@ class Kobra():
         self.window.refresh()
 
         self.window.getch()
-        self.window.timeout(0)
-
-    def change_speed(self, command):
-        if command == "+":
-            self.speed -= 25
-        elif command == "-":
-            self.speed += 25
+        self.window.timeout(self.speed)
 
     def next(self):
-        tic = dt.now()
-        while (dt.now() - tic).microseconds < self.speed * 1000:
-            self.read_char()
-            time.sleep(.1)
+        t = threading.Thread(target=lambda: time.sleep(self.speed / 1000))
+        t.start()
+        self.read_char()
+        t.join()
 
     def read_char(self):
         char_map = {
@@ -158,10 +152,9 @@ class Kobra():
             258: "S",
             260: "W",
             112: "PAUSE",
-            43: "+",
-            45: "-",
         }
 
+        curses.flushinp()
         key_code = self.window.getch()
 
         command = char_map.get(key_code)
@@ -169,8 +162,6 @@ class Kobra():
             self.pause()
         elif command in ["N", "E", "S", "W"]:
             self.set_direction(command)
-        elif command in ["+", "-"]:
-            self.change_speed(command)
 
     def play(self):
         while self.is_alive():
