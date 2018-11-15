@@ -8,7 +8,7 @@ import time
 
 class Kobra():
 
-    def __init__(self, speed=500):
+    def __init__(self, speed=400):
         self.kobra = [(1, 1)]
         self.direction = "E"
         self.alive = True
@@ -68,6 +68,8 @@ class Kobra():
         else:
             self.fruits.remove((head_x, head_y))
             self.fruits.add(self.spawn_fruit())
+            self.speed -= 10
+            self.window.timeout(self.speed)
 
         if self.direction == "N":
             self.kobra.append((head_x, head_y - 1))
@@ -137,13 +139,6 @@ class Kobra():
         self.window.getch()
         self.window.timeout(self.speed)
 
-    def change_speed(self, command):
-        if command == "+":
-            self.speed -= 25
-        elif command == "-":
-            self.speed += 25
-        self.window.timeout(self.speed)
-
     def next(self):
         t = threading.Thread(target=lambda: time.sleep(self.speed / 1000))
         t.start()
@@ -157,8 +152,6 @@ class Kobra():
             258: "S",
             260: "W",
             112: "PAUSE",
-            43: "+",
-            45: "-",
         }
 
         curses.flushinp()
@@ -169,8 +162,6 @@ class Kobra():
             self.pause()
         elif command in ["N", "E", "S", "W"]:
             self.set_direction(command)
-        elif command in ["+", "-"]:
-            self.change_speed(command)
 
     def play(self):
         while self.is_alive():
