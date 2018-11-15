@@ -70,24 +70,20 @@ class Kobra():
             self.fruits.add(self.spawn_fruit())
 
         if self.direction == "N":
-            if head_y > 1:
-                self.kobra.append((head_x, head_y - 1))
-            else:
+            self.kobra.append((head_x, head_y - 1))
+            if head_y <= 1:
                 return self.game_over()
         elif self.direction == "E":
-            if head_x < max_x - 2:
-                self.kobra.append((head_x + 1, head_y))
-            else:
+            self.kobra.append((head_x + 1, head_y))
+            if head_x >= max_x - 2:
                 return self.game_over()
         elif self.direction == "S":
-            if head_y < max_y - 2:
-                self.kobra.append((head_x, head_y + 1))
-            else:
+            self.kobra.append((head_x, head_y + 1))
+            if head_y >= max_y - 2:
                 return self.game_over()
         elif self.direction == "W":
-            if head_x > 1:
-                self.kobra.append((head_x - 1, head_y))
-            else:
+            self.kobra.append((head_x - 1, head_y))
+            if head_x <= 1:
                 return self.game_over()
 
         # if the kobra eats itself it's game over
