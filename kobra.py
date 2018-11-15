@@ -145,6 +145,71 @@ class Kobra():
         self.read_char()
         t.join()
 
+    def is_possible(self, direction):
+        head_x, head_y = self.head()
+        max_y, max_x = self.window.getmaxyx()
+
+        if direction == "N":
+            free = head_y > 1 and (head_x, head_y - 1) not in self.body()
+        elif direction == "E":
+            free = head_x < max_x - \
+                2 and (head_x + 1, head_y) not in self.body()
+        elif direction == "S":
+            free = head_y < max_y - \
+                2 and (head_x, head_y + 1) not in self.body()
+        elif direction == "W":
+            free = head_x > 1 and (head_x - 1, head_y) not in self.body()
+        else:
+            free = True
+
+        return free
+
+    def closest_fruit(self):
+        h_x, h_y = self.head()
+        fruit, _ = min(((
+            (x, y), abs(x - h_x) * abs(y - h_y)
+        ) for x, y in self.fruits), key=lambda f: f[1])
+
+        return fruit
+
+    def avoid_wall(self):
+        res = self.direction
+
+        if self.direction == "N" and not self.is_possible("N"):
+            res = "E" if self.is_possible("E") else "W"
+
+        elif self.direction == "E" and not self.is_possible("E"):
+            res = "N" if self.is_possible("N") else "S"
+
+        elif self.direction == "S" and not self.is_possible("S"):
+            res = "E" if self.is_possible("E") else "W"
+
+        elif self.direction == "W" and not self.is_possible("W"):
+            res = "N" if self.is_possible("N") else "S"
+
+        return res
+
+    def next_AI(self):
+        head_x, head_y = self.head()
+        fruit_x, fruit_y = self.closest_fruit()
+        self.window.addstr(0, 0, str(fruit_x) + " " + str(fruit_y))
+        self.window.refresh()
+
+        if head_x < fruit_x and (head_x + 1, head_y) not in self.body():
+            command = "E"
+        elif head_x > fruit_x and (head_x - 1, head_y) not in self.body():
+            command = "W"
+        elif head_y < fruit_y and (head_x, head_y + 1) not in self.body():
+            command = "S"
+        elif head_y > fruit_y and (head_x, head_y - 1) not in self.body():
+            command = "N"
+        else:
+            command = self.avoid_wall()
+
+        self.set_direction(command)
+
+        time.sleep(.1)
+
     def read_char(self):
         char_map = {
             259: "N",
