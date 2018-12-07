@@ -8,15 +8,17 @@ import time
 
 class Kobra():
 
-    def __init__(self, speed=400):
+    def __init__(self):
+        self.window = curses.initscr()
+        curses.curs_set(0)
+
+    def reset(self, speed=400):
         self.kobra = [(1, 1)]
         self.direction = "E"
         self.alive = True
-        self.window = curses.initscr()
         self.speed = speed
-        curses.curs_set(0)
+        self.window.timeout(self.speed)
         self.fruits = set([self.spawn_fruit()])
-        self.print()
 
     def print(self):
         self.window.erase()
@@ -68,7 +70,6 @@ class Kobra():
             self.fruits.remove((head_x, head_y))
             self.fruits.add(self.spawn_fruit())
             self.speed -= 10
-            self.window.timeout(self.speed)
 
         if self.direction == "N":
             self.kobra.append((head_x, head_y - 1))
@@ -120,25 +121,7 @@ class Kobra():
         x = random.randint(1, max_x - 2)
         return x, y
 
-    def pause(self):
-        self.window.timeout(-1)
-
-        display_string = "PAUSE"
-        resume_string = "Press any key to continue"
-        self.window.erase()
-        self.window.border()
-        max_y, max_x = self.window.getmaxyx()
-        y = max_y // 2
-        x1 = (max_x - len(display_string)) // 2
-        x2 = (max_x - len(resume_string)) // 2
-        self.window.addstr(y - 1, x1, display_string)
-        self.window.addstr(y + 1, x2, resume_string)
-        self.window.refresh()
-
-        self.window.getch()
-        self.window.timeout(self.speed)
-
-    def start_menu(self):
+    def menu(self, menu_items):
 
         self.window.erase()
         max_y, max_x = self.window.getmaxyx()
@@ -149,16 +132,9 @@ class Kobra():
             "| \\_ |__| |__] |  \\ |  |",
         ]
 
-        menu_items = {
-            "Play": self.play,
-            "AI": self.play_AI,
-            "Quit": self.quit,
-        }
-
-
         x = (max_x - len(title_string[0])) // 2
-        
-        for i,title_line in enumerate(title_string):
+
+        for i, title_line in enumerate(title_string):
             self.window.addstr(i + 2, x, title_line)
 
         y = max_y // 2 - len(menu_items) // 2
@@ -195,6 +171,22 @@ class Kobra():
                 break
 
         list(menu_items.values())[focus]()
+
+    def pause(self):
+        self.window.timeout(-1)
+        self.menu({
+            "Resume": lambda: self.window.timeout(self.speed),
+            "Main Menu": self.start_menu,
+            "Quit": self.quit,
+        })
+
+
+    def start_menu(self):
+        self.menu({
+            "Play": self.play,
+            "AI": self.play_AI,
+            "Quit": self.quit,
+        })
 
     def next(self):
         t = threading.Thread(target=lambda: time.sleep(self.speed / 1000))
@@ -247,6 +239,12 @@ class Kobra():
         return res
 
     def next_AI(self):
+
+        key_code = self.window.getch()
+        self.window.timeout(0)
+        if key_code == 27:
+            self.pause()
+
         head_x, head_y = self.head()
         fruit_x, fruit_y = self.closest_fruit()
 
@@ -271,7 +269,7 @@ class Kobra():
             261: "E",
             258: "S",
             260: "W",
-            112: "PAUSE",
+            27: "PAUSE",
         }
 
         curses.flushinp()
@@ -287,12 +285,14 @@ class Kobra():
         self.start_menu()
 
     def play(self):
-        self.window.timeout(self.speed)
+        self.reset()
         while self.is_alive():
+            self.window.timeout(self.speed)
             self.next()
             self.move()
 
     def play_AI(self):
+        self.reset()
         while self.is_alive():
             self.next_AI()
             self.move()
