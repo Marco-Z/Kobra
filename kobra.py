@@ -9,10 +9,19 @@ import time
 class Kobra():
 
     def __init__(self):
+        """Initialization of the window"""
+
         self.window = curses.initscr()
         curses.curs_set(0)
 
     def reset(self, speed=400):
+        """Reset the game
+        
+        Keyword Arguments:
+            speed {int} -- Update frequency of the screen 
+                           (default: {400})
+        """
+
         self.kobra = [(1, 1)]
         self.direction = "E"
         self.alive = True
@@ -21,6 +30,8 @@ class Kobra():
         self.fruits = set([self.spawn_fruit()])
 
     def print(self):
+        """Print the Kobra screen with the snake and the fruit"""
+
         self.window.erase()
         self.window.border()
 
@@ -51,15 +62,39 @@ class Kobra():
         self.window.refresh()
 
     def head(self):
+        """Returns the head of the Kobra as a tuple (x,y)
+        
+        Returns:
+            tuple -- (x,y) coordinates of the head of the Kobra
+        """
+
         return self.kobra[-1]
 
     def body(self):
+        """Returns a list of coordinates for the body parts of the Kobra
+        
+        Returns:
+            list -- List of (x,y) coordinate tuple of the body parts
+        """
+
         return self.kobra[:-1]
 
     def tail(self):
+        """Returns the last component of the Kobra body as a tuple
+        
+        Returns:
+            tuple -- (x,y) coordinates of the last bit of Kobra
+        """
+
         return self.kobra[0]
 
     def move(self):
+        """Updates the state of the game given the current direction 
+        of movement. If the Kobra head moves over a fruit, Kobra eats
+        the fruit and grows. If the Kobra Eats itself of hits the wall
+        it dies.
+        """
+
         max_y, max_x = self.window.getmaxyx()
         head_x, head_y = self.head()
 
@@ -95,6 +130,8 @@ class Kobra():
         self.print()
 
     def game_over(self):
+        """Prints the Game Over screen"""
+
         display_string = "GAME OVER!"
         points_string = f"Your points: {len(self.body())}"
         self.window.erase()
@@ -110,18 +147,49 @@ class Kobra():
         time.sleep(2)
 
     def is_alive(self):
+        """Whether the Kobra is still alive
+        
+        Returns:
+            bool -- Whether the Kobra is still alive
+        """
+
         return self.alive
 
     def set_direction(self, direction):
+        """Sets the heading direction of the Kobra to a new direction
+        
+        Arguments:
+            direction {string} -- The new direction of the Kobra:
+            `N`: towards the top of the screen
+            `S`: towards the bottom of the screen
+            `E`: towards the right of the screen
+            `W`: towards the left of the screen
+        """
+
         self.direction = direction
 
     def spawn_fruit(self):
+        """Spawns a new fruit in a random position on the screen
+        
+        Returns:
+            tuple -- (x,y) coordinates of the new fruit position
+        """
+
         max_y, max_x = self.window.getmaxyx()
         y = random.randint(1, max_y - 2)
         x = random.randint(1, max_x - 2)
         return x, y
 
     def menu(self, menu_items):
+        """Renders a menu given a map of menu items
+        
+        Arguments:
+            menu_items {dict} -- Menu items of the form: 
+                                 "display string": function
+                                 the display string is rendered on the 
+                                 screen, while the function is invoked
+                                 when the item selection is confirmed
+        """
 
         self.window.erase()
         max_y, max_x = self.window.getmaxyx()
@@ -173,6 +241,8 @@ class Kobra():
         list(menu_items.values())[focus]()
 
     def pause(self):
+        """Pause menu, with Resume, Main Menu and Quit"""
+
         self.window.timeout(-1)
         self.menu({
             "Resume": lambda: self.window.timeout(self.speed),
@@ -180,8 +250,9 @@ class Kobra():
             "Quit": self.quit,
         })
 
-
     def start_menu(self):
+        """Start Menu, with Play, AI play and Quit"""
+
         self.menu({
             "Play": self.play,
             "AI": self.play_AI,
@@ -189,12 +260,28 @@ class Kobra():
         })
 
     def next(self):
+        """Reads the commands, Returns every `self.speed` ms"""
+
         t = threading.Thread(target=lambda: time.sleep(self.speed / 1000))
         t.start()
         self.read_char()
         t.join()
 
     def is_possible(self, direction):
+        """Whether the next move is possible with the given direction
+        
+        Arguments:
+            direction {string} -- The direction to test:
+                                  `N`: towards the top of the screen
+                                  `S`: towards the bottom of the screen
+                                  `E`: towards the right of the screen
+                                  `W`: towards the left of the screen
+        
+        Returns:
+            bool -- Whether the a move in the given direction is 
+                    possible
+        """
+
         head_x, head_y = self.head()
         max_y, max_x = self.window.getmaxyx()
 
@@ -214,6 +301,13 @@ class Kobra():
         return free
 
     def closest_fruit(self):
+        """Returns the position of the closest fruit as a tuple
+        
+        Returns:
+            tuple -- (x,y) coordinates of the fruit closest to the head
+                     of the Kobra
+        """
+
         h_x, h_y = self.head()
         fruit, _ = min(((
             (x, y), abs(x - h_x) * abs(y - h_y)
@@ -222,6 +316,12 @@ class Kobra():
         return fruit
 
     def avoid_wall(self):
+        """Steers the Kobra in order to avoid the walls
+        
+        Returns:
+            string -- The new direction of the Kobra
+        """
+
         res = self.direction
 
         if self.direction == "N" and not self.is_possible("N"):
@@ -239,6 +339,7 @@ class Kobra():
         return res
 
     def next_AI(self):
+        """Updates the direction of the Kobra in a greedy manner"""
 
         key_code = self.window.getch()
         self.window.timeout(0)
@@ -264,6 +365,11 @@ class Kobra():
         time.sleep(.1)
 
     def read_char(self):
+        """Reads the next commend of the user:
+            Arrow keys: change the direction of the Kobra,
+            Escape: pause menu
+        """
+
         char_map = {
             259: "N",
             261: "E",
@@ -282,9 +388,13 @@ class Kobra():
             self.set_direction(command)
 
     def start(self):
+        """Displays the start menu"""
+
         self.start_menu()
 
     def play(self):
+        """Starts a game with user input"""
+
         self.reset()
         while self.is_alive():
             self.window.timeout(self.speed)
@@ -292,12 +402,16 @@ class Kobra():
             self.move()
 
     def play_AI(self):
+        """Starts a game played by the greedy AI"""
+
         self.reset()
         while self.is_alive():
             self.next_AI()
             self.move()
 
     def quit(self):
+        """Quits the game"""
+
         exit()
 
 def main(_):
