@@ -14,7 +14,6 @@ class Kobra():
         self.alive = True
         self.window = curses.initscr()
         self.speed = speed
-        self.window.timeout(self.speed)
         curses.curs_set(0)
         self.fruits = set([self.spawn_fruit()])
         self.print()
@@ -139,6 +138,64 @@ class Kobra():
         self.window.getch()
         self.window.timeout(self.speed)
 
+    def start_menu(self):
+
+        self.window.erase()
+        max_y, max_x = self.window.getmaxyx()
+
+        title_string = [
+            "_  _ ____ ___  ____ ____",
+            "|_/  |  | |__] |__/ |__|",
+            "| \\_ |__| |__] |  \ |  |",
+        ]
+
+        menu_items = {
+            "Play": self.play,
+            "AI": self.play_AI,
+            "Quit": self.quit,
+        }
+
+
+        x = (max_x - len(title_string[0])) // 2
+        
+        for i,title_line in enumerate(title_string):
+            self.window.addstr(i + 2, x, title_line)
+
+        y = max_y // 2 - len(menu_items) // 2
+        for i, display_string in enumerate(menu_items.keys()):
+            x = (max_x - len(display_string)) // 2
+            self.window.addstr(y + 2 * i, x, display_string)
+
+        self.window.border()
+
+        codes = {
+            259: "Up",
+            258: "Down",
+            10: "Enter",
+        }
+        x = (max_x - len(max(menu_items.keys(), key=len))) // 2 - 2
+        key_code = ""
+        focus = 0
+        while True:
+            self.window.addch(y, x, ">")
+            self.window.timeout(-1)
+            key_code = self.window.getch()
+
+            if codes[key_code] == "Up":
+                self.window.addch(y, x, " ")
+                if focus > 0:
+                    y -= 2
+                    focus -= 1
+            elif codes[key_code] == "Down":
+                self.window.addch(y, x, " ")
+                if focus < len(menu_items) - 1:
+                    y += 2
+                    focus += 1
+            elif codes[key_code] == "Enter":
+                break
+
+        list(menu_items.values())[focus]()
+
     def next(self):
         t = threading.Thread(target=lambda: time.sleep(self.speed / 1000))
         t.start()
@@ -192,8 +249,6 @@ class Kobra():
     def next_AI(self):
         head_x, head_y = self.head()
         fruit_x, fruit_y = self.closest_fruit()
-        self.window.addstr(0, 0, str(fruit_x) + " " + str(fruit_y))
-        self.window.refresh()
 
         if head_x < fruit_x and (head_x + 1, head_y) not in self.body():
             command = "E"
@@ -228,15 +283,26 @@ class Kobra():
         elif command in ["N", "E", "S", "W"]:
             self.set_direction(command)
 
+    def start(self):
+        self.start_menu()
+
     def play(self):
+        self.window.timeout(self.speed)
         while self.is_alive():
             self.next()
             self.move()
 
+    def play_AI(self):
+        while self.is_alive():
+            self.next_AI()
+            self.move()
+
+    def quit(self):
+        exit()
 
 def main(_):
     kobra = Kobra()
-    kobra.play()
+    kobra.start()
 
 
 if __name__ == "__main__":
