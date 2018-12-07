@@ -157,17 +157,17 @@ class Kobra():
             self.window.timeout(-1)
             key_code = self.window.getch()
 
-            if codes[key_code] == "Up":
+            if codes.get(key_code, "") == "Up":
                 self.window.addch(y, x, " ")
                 if focus > 0:
                     y -= 2
                     focus -= 1
-            elif codes[key_code] == "Down":
+            elif codes.get(key_code, "") == "Down":
                 self.window.addch(y, x, " ")
                 if focus < len(menu_items) - 1:
                     y += 2
                     focus += 1
-            elif codes[key_code] == "Enter":
+            elif codes.get(key_code, "") == "Enter":
                 break
 
         list(menu_items.values())[focus]()
